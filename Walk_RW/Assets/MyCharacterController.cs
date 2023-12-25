@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CharacterController : MonoBehaviour
+public class MyCharacterController : MonoBehaviour
 {
     public float maxHeadMoveDistance = 5.0f;
     public float headMoveSpeed = 10.0f;
@@ -57,6 +57,19 @@ void HandleDirectionInput()
                     StartHeadMovement(lastDirectionInput.normalized);
                     Debug.Log(lastDirectionInput.normalized);
                     isHeadMoving = true; // 在这里设置isHeadMoving为true
+                    
+                    Debug.Log("StartHeadMovement");
+                    headStartPosition = head.position;
+                    float moveDistance = Mathf.Clamp(keyPressDuration, 0, maxHeadMoveDistance); // 使用按键持续时间计算移动距离
+                    headTargetPosition = headStartPosition + new Vector3(lastDirectionInput.normalized.x, lastDirectionInput.normalized.y, 0) * moveDistance;
+                    
+                    
+                    // 显示预测落点
+                    Debug.DrawLine(headStartPosition, headTargetPosition, Color.red, 2.0f);
+                    // 使用LineRenderer组件来显示预测落点
+                    Debug.Log("lineRenderer" + headTargetPosition + " " + headTargetPosition);
+                    lineRenderer.SetPosition(0, headStartPosition);
+                    lineRenderer.SetPosition(1, headTargetPosition);
                 }
                 keyPressDuration = 0.0f; // 重置按键持续时间
             }
@@ -76,14 +89,7 @@ void StartHeadMovement(Vector2 direction)
     Debug.Log("StartHeadMovement");
     headStartPosition = head.position;
     float moveDistance = Mathf.Clamp(keyPressDuration, 0, maxHeadMoveDistance); // 使用按键持续时间计算移动距离
-    headTargetPosition = headStartPosition + new Vector3(direction.x, 0, direction.y) * moveDistance;
-
-    // 显示预测落点
-    Debug.DrawLine(headStartPosition, headTargetPosition, Color.red, 2.0f);
-    // 使用LineRenderer组件来显示预测落点
-    Debug.Log("lineRenderer" + headTargetPosition + " " + headTargetPosition);
-    lineRenderer.SetPosition(0, headStartPosition);
-    lineRenderer.SetPosition(1, headTargetPosition);
+    headTargetPosition = headStartPosition + new Vector3(direction.x, direction.y, 0) * moveDistance;
 
     // Debug输出落点
     Debug.Log("落点"+headTargetPosition);
@@ -113,8 +119,6 @@ void StartHeadMovement(Vector2 direction)
             headStartPosition = head.position;
             headTargetPosition = headStartPosition + moveDirection * maxHeadMoveDistance;
             
-            // 显示预测落点（你可以替换为自己的视觉化方式）
-            Debug.DrawLine(headStartPosition, headTargetPosition, Color.red, 2.0f);
 
             isHeadMoving = true;
         }
