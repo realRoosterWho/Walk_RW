@@ -249,6 +249,7 @@ MonoBehaviour:
   tailMoveSpeed: 5
   tailMoveInterval: 0.5
   tailMoveStep: 0.25
+  headMoveStep: 2
   head: {fileID: 1910173466}
   tail: {fileID: 1039341682}
   lineRenderer: {fileID: 1586354410}

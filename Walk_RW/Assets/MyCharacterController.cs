@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System;
 
 public class MyCharacterController : MonoBehaviour
 {
@@ -7,6 +9,7 @@ public class MyCharacterController : MonoBehaviour
     public float tailMoveSpeed = 5.0f;
     public float tailMoveInterval = 0.5f;
     public float tailMoveStep = 0.25f;
+    public float headMoveStep = 5f;
     private float keyPressDuration = 0.0f;
 
     private Vector3 headStartPosition;
@@ -48,28 +51,27 @@ void HandleDirectionInput()
             {
                 lastDirectionInput = input;
                 keyPressDuration += Time.deltaTime; // 计算按键持续时间
+                
+                // 明确头部的起始位置和目标位置
+                headStartPosition = head.position;
+                float moveDistance = Mathf.Clamp((float)Math.Floor(keyPressDuration * headMoveStep), 0, maxHeadMoveDistance); // 使用按键持续时间计算移动距离
+                headTargetPosition = headStartPosition + new Vector3(lastDirectionInput.normalized.x, lastDirectionInput.normalized.y, 0) * moveDistance;
+                // 显示预测落点
+                Debug.DrawLine(headStartPosition, headTargetPosition, Color.red, 2.0f);
+                // 使用LineRenderer组件来显示预测落点
+                Debug.Log("lineRenderer" + headTargetPosition + " " + headTargetPosition);
+                lineRenderer.SetPosition(0, headStartPosition);
+                lineRenderer.SetPosition(1, headTargetPosition);
             }
             else
             {
-                if (lastDirectionInput != Vector2.zero)
+                if (lastDirectionInput != Vector2.zero) 
                 {
                     // 定义头部目标位置
-                    StartHeadMovement(lastDirectionInput.normalized);
+                    //StartHeadMovement(lastDirectionInput.normalized);
                     Debug.Log(lastDirectionInput.normalized);
                     isHeadMoving = true; // 在这里设置isHeadMoving为true
-                    
-                    Debug.Log("StartHeadMovement");
-                    headStartPosition = head.position;
-                    float moveDistance = Mathf.Clamp(keyPressDuration, 0, maxHeadMoveDistance); // 使用按键持续时间计算移动距离
-                    headTargetPosition = headStartPosition + new Vector3(lastDirectionInput.normalized.x, lastDirectionInput.normalized.y, 0) * moveDistance;
-                    
-                    
-                    // 显示预测落点
-                    Debug.DrawLine(headStartPosition, headTargetPosition, Color.red, 2.0f);
-                    // 使用LineRenderer组件来显示预测落点
-                    Debug.Log("lineRenderer" + headTargetPosition + " " + headTargetPosition);
-                    lineRenderer.SetPosition(0, headStartPosition);
-                    lineRenderer.SetPosition(1, headTargetPosition);
+
                 }
                 keyPressDuration = 0.0f; // 重置按键持续时间
             }
