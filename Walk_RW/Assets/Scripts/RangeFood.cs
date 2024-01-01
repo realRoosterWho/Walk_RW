@@ -37,7 +37,7 @@ public class RangeFood : MonoBehaviour
     {
         GameObject food = GameObject.Instantiate(FoodPrefab); //克隆一个食物的预制体
         food.GetComponent<Image>().sprite = FoodSpriteList[Random.Range(0, FoodSpriteList.Count - 1)]; //随机一个食物的图片
-        food.transform.parent = this.transform.parent;
+        food.transform.SetParent(this.transform.parent, false);
         food.transform.localPosition = new Vector3(Random.Range(Const.WidthminX, Const.WidthmaxX),
             Random.Range(Const.HeightminY, Const.HeightmaxY), 0); //在这里给食物赋值一个随机的位置
         food.transform.localScale = Vector3.one; //让缩放为1

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public class SnakeHeadController : MonoBehaviour
+public class SnakeHeadController : MonosingletonTemp<SnakeHeadController>
 {
  public float Timer;                //游戏速度
     public int step;//蛇头的移动距离
@@ -84,6 +84,7 @@ public class SnakeHeadController : MonoBehaviour
    //碰撞
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("碰撞");
         if (other.CompareTag("Food"))
         {
             Destroy(other.gameObject);//销毁食物

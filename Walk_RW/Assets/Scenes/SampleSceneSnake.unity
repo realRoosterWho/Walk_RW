@@ -173,6 +173,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FoodSpriteList:
   - {fileID: 21300000, guid: 97affd873e3b9434a82dfc24b2a9592e, type: 3}
+  - {fileID: 21300000, guid: d5ed9715704f64b4793a37af04857bd6, type: 3}
   FoodPrefab: {fileID: 6089856552241186136, guid: cf76e39e743759e43b2ad504571607bb, type: 3}
 --- !u!1 &968926985
 GameObject:
@@ -208,8 +209,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -152.8, y: 3.8613892}
-  m_SizeDelta: {x: 100, y: 100}
+  m_AnchoredPosition: {x: -66, y: 56}
+  m_SizeDelta: {x: 42.5562, y: 42.556}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &968926987
 MonoBehaviour:
@@ -443,8 +444,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000061035, y: 0}
-  m_SizeDelta: {x: 1920, y: 1080}
+  m_AnchoredPosition: {x: 0.000030518, y: 0}
+  m_SizeDelta: {x: 706, y: 538}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1903693942
 MonoBehaviour:
@@ -627,7 +628,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 44.0234, y: 44.0234}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2003644048
 MonoBehaviour:
@@ -641,8 +642,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd609ea92b910334fa1f40348df688c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Timer: 1
-  step: 5
+  Timer: 0.5
+  step: 30
   bodyPrefab: {fileID: 968926985}
   bodyList: []
   bodySprites:
@@ -704,11 +705,11 @@ CapsuleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: -0.8916626, y: -0.3214264}
-  m_Size: {x: 99.47351, y: 101.70267}
+  m_Size: {x: 45.442703, y: 46.461052}
   m_Direction: 0
 --- !u!114 &2003644051
 MonoBehaviour:
