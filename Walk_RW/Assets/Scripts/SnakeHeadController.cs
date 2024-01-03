@@ -89,4 +89,10 @@ public class SnakeHeadController : MonoBehaviour
             RangeFood.Instance.AddFood(); //添加食物
         }
     }
+    
+    public void GameOver()
+    {
+        // 在这里添加结束游戏的代码
+        Debug.Log("Game Over");
+    }
 }
