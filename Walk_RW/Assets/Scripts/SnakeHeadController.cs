@@ -73,7 +73,7 @@ public class SnakeHeadController : MonoBehaviour
     //生长尾巴
     public void Grow()
     {
-        int index = (bodyList.Count % 2 == 0) ? 0 : 1;
+        int index = (bodyList.Count % 2 == 0) ? 0 : 1;//这行代码具体作用是：如果蛇身的数量是偶数，那么就是0，否则就是1
         GameObject body = Instantiate(bodyPrefab, new Vector3(2000, 2000, 0), Quaternion.identity);
         body.GetComponent<SpriteRenderer>().sprite = bodySprites[index];
         bodyList.Add(body.transform);
@@ -86,7 +86,8 @@ public class SnakeHeadController : MonoBehaviour
         {
             Destroy(other.gameObject); //销毁食物
             this.Grow(); //生长尾巴
-            RangeFood.Instance.AddFood(); //添加食物
+            //添加食物
+            GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
         }
     }
     

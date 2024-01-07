@@ -20,7 +20,9 @@ public class ThrowHead : MonoBehaviour
     private Vector3 OldHeadPos; //蛇头的坐标
     private bool isDragging = false;
     private bool isOneMove = true;
+    private bool isCanDrag = true;
     private float releaseTime = 0f;
+    private float currentMaxDragDistance = 2f;
 
     private Vector2 direction;
 
@@ -71,6 +73,7 @@ public class ThrowHead : MonoBehaviour
         // 如果蛇身存在且蛇头和第一节身体的距离小于或等于一个步长，那么不执行移动
         if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 1.5))
         {
+            isCanDrag = true;
             path.Clear();
             return;
         }
@@ -123,20 +126,21 @@ public class ThrowHead : MonoBehaviour
     }
     
     
-    public void Grow()
+    public void Grow(int growthCount = 5)
     {
-        // 创建新的蛇身部分
-        GameObject newBodyPart = Instantiate(bodyPrefab);
+        for (int i = 0; i < growthCount; i++)
+        {
+            // 创建新的蛇身部分，每个新部分的初始位置都有所不同
+            Vector3 initialPosition = new Vector3(2000 + i * 10, 2000 + i * 10, 0);
+            GameObject newBodyPart = Instantiate(bodyPrefab, initialPosition, Quaternion.identity);
 
-        // 将新的蛇身部分的位置设置为蛇身列表中的最后一个元素的位置
-        newBodyPart.transform.position = bodyList[bodyList.Count - 1].position;
+            // 根据蛇身的长度来选择纹理
+            int index = bodyList.Count % 2;
+            newBodyPart.GetComponent<SpriteRenderer>().sprite = bodySprites[index];
 
-        // 根据蛇身的长度来选择纹理
-        int index = bodyList.Count % 2;
-        newBodyPart.GetComponent<SpriteRenderer>().sprite = bodySprites[index];
-
-        // 将新的蛇身部分添加到蛇身列表的末尾
-        bodyList.Add(newBodyPart.transform);
+            // 将新的蛇身部分添加到蛇身列表的末尾
+            bodyList.Add(newBodyPart.transform);
+        }
     }
     
     //碰撞
@@ -147,56 +151,91 @@ public class ThrowHead : MonoBehaviour
         {
             Destroy(other.gameObject); //销毁食物
             this.Grow(); //生长尾巴
-            RangeFood.Instance.AddFood(); //添加食物
+            //添加食物
+            GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
         }
     }
 
     private void Update()
     {
-
-        if (Input.GetMouseButtonDown(0)) //按下鼠标左键
+        
+        if(isCanDrag == true)
         {
-            startPos = rb.position;
-            line.enabled = true;
-            line.SetPosition(0, startPos);
-        }
-
-        if (Input.GetMouseButton(0)) //按住鼠标左键
-        {
-            Vector2 currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            direction = startPos - currentPos;
-            float distance = direction.magnitude;
-
-            if (distance > maxDragDistance)
+            if (Input.GetMouseButtonDown(0)) //按下鼠标左键
             {
-                direction = direction.normalized * maxDragDistance;
+                Debug.Log("按下鼠标左键");
+                startPos = rb.position;
+                line.enabled = true;
+                line.SetPosition(0, startPos);
             }
 
-            rb.position = startPos - direction;
-            line.SetPosition(1, rb.position);
-            isDragging = true;
-        }
-
-        if (Input.GetMouseButtonUp(0) && isDragging) //松开鼠标左键
-        {
-            Vector2 force = (startPos - rb.position) * power;
-
-            //如果force没有到达最小值，那么设定为最小值
-            if (force.magnitude < 1f)
+            if (Input.GetMouseButton(0)) //按住鼠标左键
             {
-                force = force.normalized * 1f;
+                Vector2 currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                direction = startPos - currentPos;
+                float distance = direction.magnitude;
+                currentMaxDragDistance = maxDragDistance;
+
+                // 使用RaycastAll检测拖拽路径上所有的物体
+                RaycastHit2D[] hits = Physics2D.RaycastAll(startPos, -direction, maxDragDistance);
+                Debug.DrawRay(startPos, -direction, Color.red);
+
+                // 找到距离最近的墙壁
+                RaycastHit2D firstWallHit = default;
+                float minDistance = float.MaxValue;
+                foreach (var hit in hits)
+                {
+                    if (hit.collider.CompareTag("Wall"))
+                    {
+                        float hitDistance = Vector2.Distance(startPos, hit.point);
+                        if (hitDistance < minDistance)
+                        {
+                            minDistance = hitDistance;
+                            firstWallHit = hit;
+                        }
+                    }
+                }
+
+                // 如果有墙壁，那么限制拖拽的距离
+                if (firstWallHit.collider != null)
+                {
+                    currentMaxDragDistance = Mathf.Min(minDistance, maxDragDistance);
+                }
+
+                if (distance > currentMaxDragDistance)
+                {
+                    direction = direction.normalized * currentMaxDragDistance;
+                }
+
+                rb.position = startPos - direction;
+                line.SetPosition(1, rb.position);
+                isDragging = true;
             }
 
-            rb.AddForce(force, ForceMode2D.Impulse);
-            line.enabled = false;
-            releaseTime = Time.time;
+            if (Input.GetMouseButtonUp(0) && isDragging) //松开鼠标左键
+            {
+                Vector2 force = (startPos - rb.position) * power;
 
-            /*
-            // 将蛇头的移动路径添加到队列中
-            path.Enqueue(rb.position);
-            */
-            isDragging = false;
+                //如果force没有到达最小值，那么设定为最小值
+                if (force.magnitude < 1f)
+                {
+                    force = force.normalized * 1f;
+                }
+
+                rb.AddForce(force, ForceMode2D.Impulse);
+                line.enabled = false;
+                releaseTime = Time.time;
+
+                /*
+                // 将蛇头的移动路径添加到队列中
+                path.Enqueue(rb.position);
+                */
+                isDragging = false;
+                isCanDrag = false;
+            }
         }
+
+
 
         // 检测“当头不再动”
         if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.1f && Time.time - releaseTime > 0.1f)

@@ -6,11 +6,11 @@ using UnityEngine.SceneManagement;
 public class NextScene : MonoBehaviour
 {
     
-    public string scenename;
+    public string scenename = "Scene1";
     // Start is called before the first frame update
     // Update is called once per frame
 
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log("Collision");
         if (other.gameObject.CompareTag("Player"))

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class RangeFood : MonosingletonTemp<RangeFood>
+public class RangeFood : MonoBehaviour
 {
     [Header("食物的所有图片链表")] public List<Sprite> FoodSpriteList;
     [Header("食物预设")] public GameObject FoodPrefab;
