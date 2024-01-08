@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleSceneSnake.unity
     guid: 71ca07233db20c64ba0291bb0e2c91f8
+  - enabled: 1
+    path: Assets/Scenes/SampleSceneSnake 1.unity
+    guid: dd1965ca4fe56408c8836c8adfd2f719
   m_configObjects: {}
