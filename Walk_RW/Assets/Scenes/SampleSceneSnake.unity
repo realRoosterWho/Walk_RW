@@ -1347,7 +1347,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxDragDistance: 10
-  power: 10
+  power: 5
   Timer: 0.1
   step: 1
   bodyPrefab: {fileID: 6089856552241186136, guid: 44e187b4c629c99418e93949ded32499, type: 3}

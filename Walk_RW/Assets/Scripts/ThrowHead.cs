@@ -23,6 +23,7 @@ public class ThrowHead : MonoBehaviour
     private bool isCanDrag = true;
     private float releaseTime = 0f;
     private float currentMaxDragDistance = 2f;
+    private int totalGrowth = 0;
 
     private Vector2 direction;
 
@@ -128,10 +129,11 @@ public class ThrowHead : MonoBehaviour
     
     public void Grow(int growthCount = 5)
     {
+        totalGrowth++; // 记录总共生长的次数
         for (int i = 0; i < growthCount; i++)
         {
             // 创建新的蛇身部分，每个新部分的初始位置都有所不同
-            Vector3 initialPosition = new Vector3(2000 + i * 10, 2000 + i * 10, 0);
+            Vector3 initialPosition = new Vector3(2000 * totalGrowth + i * 10, 2000 * totalGrowth + i * 10, 0);
             GameObject newBodyPart = Instantiate(bodyPrefab, initialPosition, Quaternion.identity);
 
             // 根据蛇身的长度来选择纹理
@@ -149,8 +151,9 @@ public class ThrowHead : MonoBehaviour
         Debug.Log("碰撞");
         if (other.CompareTag("Food"))
         {
+            int growthCount = other.GetComponent<FoodText>().foodnum;
             Destroy(other.gameObject); //销毁食物
-            this.Grow(); //生长尾巴
+            this.Grow(growthCount); //生长尾巴
             //添加食物
             GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
         }
