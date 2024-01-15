@@ -6,6 +6,7 @@ public class ThrowHead : MonoBehaviour
 {
     public float maxDragDistance = 2f;
     public float power = 10f;
+    public Grid grid;
 
     private Rigidbody2D rb;
     private Vector2 startPos;
@@ -13,7 +14,7 @@ public class ThrowHead : MonoBehaviour
     private Coroutine moveCoroutine;
     
     public float Timer; //游戏速度
-    public int step; //蛇头的移动距离
+    public float step; //蛇头的移动距离
     private int X; //移动的增量值
     private int Y; //移动的增量值
     private Vector3 HeadPos; //蛇头的坐标
@@ -24,6 +25,7 @@ public class ThrowHead : MonoBehaviour
     private float releaseTime = 0f;
     private float currentMaxDragDistance = 2f;
     private int totalGrowth = 0;
+    private float cellSize;
 
     private Vector2 direction;
 
@@ -57,6 +59,19 @@ public class ThrowHead : MonoBehaviour
 
         //初始化direction为向上
         direction = Vector2.up;
+        
+        //获取场景中名字叫Grid的东西上面的Grid组件
+        grid = GameObject.Find("Grid").GetComponent<Grid>();
+        
+        //检查网格的cellSizeXY是否相等
+        if (grid.cellSize.x != grid.cellSize.y)
+        {
+            Debug.LogError("The cellSizeXY of the grid is not equal.");
+            return;
+        }
+        
+        //记录网格的cellSize
+        cellSize = grid.cellSize.x;
 
         OnMove();
     }
@@ -71,8 +86,23 @@ public class ThrowHead : MonoBehaviour
         // 计算蛇头的移动方向，也就是现在的第一节身体的位置减去蛇头的位置
         Vector3 moveDirection = bodyList.Count > 0 ? bodyList[0].position - HeadPos : direction * step;
         
+        // 计算蛇头的新位置
+        Vector3 headPos = gameObject.transform.position;
+
+        // 将蛇头的新位置转换为最近的瓷砖中心
+        Vector3Int cellPos = grid.WorldToCell(headPos);
+        Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+        // 
+        // 使用瓷砖中心作为蛇头的新位置
+        headPos = cellCenterPos;
+        gameObject.transform.position = headPos;
+        // 速度变成0
+        rb.velocity = Vector2.zero;
+
+
+        
         // 如果蛇身存在且蛇头和第一节身体的距离小于或等于一个步长，那么不执行移动
-        if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 1.5))
+        if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 2))
         {
             isCanDrag = true;
             path.Clear();
@@ -84,16 +114,43 @@ public class ThrowHead : MonoBehaviour
         {
             //清空当前路径
             path.Clear();
-            
-            // 将蛇头的移动路径分解为一系列的正交步骤
+
+            //修改路径设计，使得路径也按照网格走
             int steps = Mathf.RoundToInt(Mathf.Max(Mathf.Abs(moveDirection.x), Mathf.Abs(moveDirection.y)));
             Vector3 stepDirection = moveDirection / steps;
+            Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
             for (int i = 0; i < steps; i++)
             {
-                // 将每个步骤添加到路径中
-                path.Enqueue(HeadPos + stepDirection * i);
+                // 计算每一步的世界坐标
+                Vector3 worldPos = HeadPos + stepDirection * i;
+
+                // 将世界坐标转换为最近的瓷砖中心
+                cellPos = grid.WorldToCell(worldPos);
+                cellCenterPos = grid.GetCellCenterWorld(cellPos);
+                
+                // 如果上一次移动的位置和这一次移动的位置一样，那么不要添加
+                if (cellCenterPos == lastCellCenterPos)
+                {
+                    continue;
+                }
+
+                // 如果上一次移动的位置和这一次的位置之间的距离大于一个cellSize，那么就在这两个路径节点之间插入一个路径节点，这个路径节点需要是瓷砖中心，并且取第一个路径节点的x坐标，取第二个路径节点的y坐标
+                if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > cellSize)
+                {
+                    Vector3Int lastCellPos = grid.WorldToCell(lastCellCenterPos);
+                    Vector3Int currentCellPos = grid.WorldToCell(cellCenterPos);
+                    Vector3Int insertCellPos = new Vector3Int(lastCellPos.x, currentCellPos.y, 0);
+                    Vector3 insertCellCenterPos = grid.GetCellCenterWorld(insertCellPos);
+                    path.Enqueue(insertCellCenterPos);
+                }
+
+                // 将瓷砖中心添加到路径中
+                path.Enqueue(cellCenterPos);
+
+                // 记录这一次的移动位置，以便下一次循环时使用
+                lastCellCenterPos = cellCenterPos;
             }
-        
+
             // 倒序
             path = new Queue<Vector3>(new Stack<Vector3>(path));
             isOneMove = true;
@@ -241,7 +298,7 @@ public class ThrowHead : MonoBehaviour
 
 
         // 检测“当头不再动”
-        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.1f && Time.time - releaseTime > 0.1f)
+        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 0.1f)
         {
             if (moveCoroutine == null)
             {
