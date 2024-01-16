@@ -27,6 +27,7 @@ public class ThrowHead : MonoBehaviour
     private int totalGrowth = 0;
     private float cellSize;
     private bool isAIReady = false;
+    private bool isPassPath = false;
 
     private Vector2 direction;
 
@@ -75,6 +76,9 @@ public class ThrowHead : MonoBehaviour
         
         //记录网格的cellSize
         cellSize = grid.cellSize.x;
+        
+        
+        EventManager.Instance.OnGameEvent += AIReady; //订阅事件
 
         OnMove();
     }
@@ -83,7 +87,6 @@ public class ThrowHead : MonoBehaviour
     public void OnMove()
     {
         Debug.Log("OnMove");
-        EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OnMove);
         // 计算蛇头的新位置
         HeadPos = gameObject.transform.position;
 
@@ -117,47 +120,47 @@ public class ThrowHead : MonoBehaviour
         if (isOneMove == false)
         {
             EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OneMove);
-            //清空当前路径
-            path.Clear();
+            // //清空当前路径
+            // path.Clear();
+            //
+            // //修改路径设计，使得路径也按照网格走
+            // int steps = Mathf.RoundToInt(Mathf.Max(Mathf.Abs(moveDirection.x), Mathf.Abs(moveDirection.y))); // 计算移动的步数
+            // Vector3 stepDirection = moveDirection / steps;
+            // Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
+            // for (int i = 0; i < steps; i++)
+            // {
+            //     // 计算每一步的世界坐标
+            //     Vector3 worldPos = HeadPos + stepDirection * i;
+            //
+            //     // 将世界坐标转换为最近的瓷砖中心
+            //     cellPos = grid.WorldToCell(worldPos);
+            //     cellCenterPos = grid.GetCellCenterWorld(cellPos);
+            //     
+            //     // 如果上一次移动的位置和这一次移动的位置一样，那么不要添加
+            //     if (cellCenterPos == lastCellCenterPos)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     // 如果上一次移动的位置和这一次的位置之间的距离大于一个cellSize，那么就在这两个路径节点之间插入一个路径节点，这个路径节点需要是瓷砖中心，并且取第一个路径节点的x坐标，取第二个路径节点的y坐标
+            //     if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > cellSize)
+            //     {
+            //         Vector3Int lastCellPos = grid.WorldToCell(lastCellCenterPos);
+            //         Vector3Int currentCellPos = grid.WorldToCell(cellCenterPos);
+            //         Vector3Int insertCellPos = new Vector3Int(lastCellPos.x, currentCellPos.y, 0);
+            //         Vector3 insertCellCenterPos = grid.GetCellCenterWorld(insertCellPos);
+            //         path.Enqueue(insertCellCenterPos);
+            //     }
+            //
+            //     // 将瓷砖中心添加到路径中
+            //     path.Enqueue(cellCenterPos);
+            //
+            //     // 记录这一次的移动位置，以便下一次循环时使用
+            //     lastCellCenterPos = cellCenterPos;
+            // }
 
-            //修改路径设计，使得路径也按照网格走
-            int steps = Mathf.RoundToInt(Mathf.Max(Mathf.Abs(moveDirection.x), Mathf.Abs(moveDirection.y)));
-            Vector3 stepDirection = moveDirection / steps;
-            Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
-            for (int i = 0; i < steps; i++)
-            {
-                // 计算每一步的世界坐标
-                Vector3 worldPos = HeadPos + stepDirection * i;
-
-                // 将世界坐标转换为最近的瓷砖中心
-                cellPos = grid.WorldToCell(worldPos);
-                cellCenterPos = grid.GetCellCenterWorld(cellPos);
-                
-                // 如果上一次移动的位置和这一次移动的位置一样，那么不要添加
-                if (cellCenterPos == lastCellCenterPos)
-                {
-                    continue;
-                }
-
-                // 如果上一次移动的位置和这一次的位置之间的距离大于一个cellSize，那么就在这两个路径节点之间插入一个路径节点，这个路径节点需要是瓷砖中心，并且取第一个路径节点的x坐标，取第二个路径节点的y坐标
-                if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > cellSize)
-                {
-                    Vector3Int lastCellPos = grid.WorldToCell(lastCellCenterPos);
-                    Vector3Int currentCellPos = grid.WorldToCell(cellCenterPos);
-                    Vector3Int insertCellPos = new Vector3Int(lastCellPos.x, currentCellPos.y, 0);
-                    Vector3 insertCellCenterPos = grid.GetCellCenterWorld(insertCellPos);
-                    path.Enqueue(insertCellCenterPos);
-                }
-
-                // 将瓷砖中心添加到路径中
-                path.Enqueue(cellCenterPos);
-
-                // 记录这一次的移动位置，以便下一次循环时使用
-                lastCellCenterPos = cellCenterPos;
-            }
-
-            // 倒序
-            path = new Queue<Vector3>(new Stack<Vector3>(path));
+            // // 倒序
+            // path = new Queue<Vector3>(new Stack<Vector3>(path));
             isOneMove = true;
         }
         
@@ -241,8 +244,17 @@ public class ThrowHead : MonoBehaviour
         isAIReady = false;
     }
 
+    private void FixedUpdate()
+    {
+        isAIReady = false;
+
+        
+        
+    }
+    
     private void Update()
     {
+        
         
         if(isCanDrag == true)
         {
@@ -317,6 +329,7 @@ public class ThrowHead : MonoBehaviour
                 */
                 isDragging = false;
                 isCanDrag = false;
+                EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial);
             }
         }
 
@@ -325,10 +338,19 @@ public class ThrowHead : MonoBehaviour
         // 检测“当头不再动”
         if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 0.1f)
         {
-            if (moveCoroutine == null)
+            Debug.Log("头不再动");
+            tileHeadPos();
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OnMove);
+                
+            if (isAIReady == true)
             {
-                moveCoroutine = StartCoroutine(MoveRepeatedly());
-            }
+                if (moveCoroutine == null)
+                {
+                    moveCoroutine = StartCoroutine(MoveRepeatedly());
+                }
+
+            }   
+
         }
         else
         {
@@ -347,5 +369,36 @@ public class ThrowHead : MonoBehaviour
                 yield return new WaitForSeconds(Timer); //等待Timer秒
             }
         }
+    }
+
+    public void tileHeadPos()
+    {
+        // 计算蛇头的新位置
+        HeadPos = gameObject.transform.position;
+        
+        // 计算蛇头的新位置
+        Vector3 headPos = gameObject.transform.position;
+
+        // 将蛇头的新位置转换为最近的瓷砖中心
+        Vector3Int cellPos = grid.WorldToCell(headPos);
+        Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+        // 
+        // 使用瓷砖中心作为蛇头的新位置
+        headPos = cellCenterPos;
+        gameObject.transform.position = headPos;
+        // 速度变成0
+        rb.velocity = Vector2.zero;
+    }
+
+    public void AIReady(EventManager.GameEvent gameEvent, GameEventArgs eventArgs)
+    {
+    
+        if (gameEvent == EventManager.GameEvent.AIReady)
+        {
+            Debug.Log("PathPassed - SpringHeadGet");
+            path = eventArgs.Vector3QueueValue;
+            isPassPath = true;
+        }
+    
     }
 }

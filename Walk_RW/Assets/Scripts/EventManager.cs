@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using System.Collections.Generic; // Add this line
 
@@ -9,6 +10,8 @@ public class GameEventArgs : EventArgs
     public float FloatValue { get; set; }
     public string StringValue { get; set; }
     public List<Vector3> Vector3ListValue { get; set; }
+    
+    public Queue<Vector3> Vector3QueueValue { get; set; }
     
 }
 
@@ -22,6 +25,8 @@ public class EventManager : MonosingletonTemp<EventManager>
         GameOver,
         OnMove,
         OneMove,
+        MoveInitial,
+        AIReady,
         // 添加更多的游戏事件...
     }
     
@@ -48,9 +53,10 @@ public class EventManager : MonosingletonTemp<EventManager>
      */
     // 触发示例
     /*
-    void OnMove(EventManager.GameEvent gameEvent) //事件处理函数
+    void OnMove(EventManager.GameEvent gameEvent, GameEventArgs eventArgs) //触发事件
        { 
        Debug.Log("AIOnMove");
+       Debug.Log(eventArgs.IntValue);
        }
      */
 }
