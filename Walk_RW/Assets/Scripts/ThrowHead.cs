@@ -26,6 +26,7 @@ public class ThrowHead : MonoBehaviour
     private float currentMaxDragDistance = 2f;
     private int totalGrowth = 0;
     private float cellSize;
+    private bool isAIReady = false;
 
     private Vector2 direction;
 
@@ -56,6 +57,8 @@ public class ThrowHead : MonoBehaviour
 
         line.startWidth = 0.1f;
         line.endWidth = 0.1f;
+        //将line的图层设置高
+        line.sortingOrder = 1;
 
         //初始化direction为向上
         direction = Vector2.up;
@@ -80,6 +83,7 @@ public class ThrowHead : MonoBehaviour
     public void OnMove()
     {
         Debug.Log("OnMove");
+        EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OnMove);
         // 计算蛇头的新位置
         HeadPos = gameObject.transform.position;
 
@@ -112,6 +116,7 @@ public class ThrowHead : MonoBehaviour
 
         if (isOneMove == false)
         {
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OneMove);
             //清空当前路径
             path.Clear();
 
@@ -214,6 +219,26 @@ public class ThrowHead : MonoBehaviour
             //添加食物
             GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
         }
+    }
+    
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        // 获取在蛇头位置和一定半径内的所有碰撞器
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1f);
+
+        // 遍历所有碰撞器
+        foreach (var collider in colliders)
+        {
+            if (collider.CompareTag("AINav"))
+            {
+                isAIReady = true;
+                Debug.Log("碰撞AINav");
+                return; // 如果找到了带有"AINav"标签的物体，就直接返回
+            }
+        }
+
+        // 如果没有找到带有"AINav"标签的物体，就将isAIReady设置为false
+        isAIReady = false;
     }
 
     private void Update()
