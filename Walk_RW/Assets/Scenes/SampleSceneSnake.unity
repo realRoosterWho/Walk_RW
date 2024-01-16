@@ -4947,7 +4947,7 @@ MonoBehaviour:
   maxDragDistance: 10
   power: 5
   grid: {fileID: 0}
-  Timer: 0.5
+  Timer: 0.1
   step: 1.4
   bodyPrefab: {fileID: 6089856552241186136, guid: 44e187b4c629c99418e93949ded32499, type: 3}
   bodyList:

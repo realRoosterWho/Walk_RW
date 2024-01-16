@@ -15,6 +15,7 @@ public class AIPathfindeing : MonoBehaviour
     public Grid grid;
     
     private Queue<Vector3> path = new Queue<Vector3>();
+
     private float cellSize;
     
     private Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
@@ -102,7 +103,7 @@ public class AIPathfindeing : MonoBehaviour
 
         ContinueUpdate:
         //Debug path的长度
-        Debug.Log("path.Count = " + path.Count);
+        // Debug.Log("path.Count = " + path.Count);
 
         if (isPassPath)
         {

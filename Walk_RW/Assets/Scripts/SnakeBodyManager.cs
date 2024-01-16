@@ -22,11 +22,11 @@ public class SnakeBodyManager : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collider)
     {
-        Debug.Log("身体碰撞");
+        // Debug.Log("身体碰撞");
         // 检查碰撞的游戏对象是否是墙壁
         if (collider.gameObject.CompareTag("Wall"))
         {
-            Debug.Log("身体碰撞墙壁");
+            // Debug.Log("身体碰撞墙壁");
             // 如果是墙壁，那么结束游戏
             GameOver();
         }

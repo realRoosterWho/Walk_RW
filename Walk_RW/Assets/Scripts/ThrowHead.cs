@@ -40,6 +40,7 @@ public class ThrowHead : MonoBehaviour
     // 蛇头的移动路径
     private Queue<Vector3> path = new Queue<Vector3>();
 
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -112,7 +113,7 @@ public class ThrowHead : MonoBehaviour
         if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 2))
         {
             isCanDrag = true;
-            path.Clear();
+            // path.Clear();
             return;
         }
 
@@ -235,7 +236,7 @@ public class ThrowHead : MonoBehaviour
             if (collider.CompareTag("AINav"))
             {
                 isAIReady = true;
-                Debug.Log("碰撞AINav");
+                // Debug.Log("碰撞AINav");
                 return; // 如果找到了带有"AINav"标签的物体，就直接返回
             }
         }
@@ -254,13 +255,12 @@ public class ThrowHead : MonoBehaviour
     
     private void Update()
     {
-        
-        
+
         if(isCanDrag == true)
         {
             if (Input.GetMouseButtonDown(0)) //按下鼠标左键
             {
-                Debug.Log("按下鼠标左键");
+                // Debug.Log("按下鼠标左键");
                 startPos = rb.position;
                 line.enabled = true;
                 line.SetPosition(0, startPos);
@@ -338,7 +338,7 @@ public class ThrowHead : MonoBehaviour
         // 检测“当头不再动”
         if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 0.1f)
         {
-            Debug.Log("头不再动");
+            // Debug.Log("头不再动");
             tileHeadPos();
             EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OnMove);
                 
@@ -396,7 +396,9 @@ public class ThrowHead : MonoBehaviour
         if (gameEvent == EventManager.GameEvent.AIReady)
         {
             Debug.Log("PathPassed - SpringHeadGet");
-            path = eventArgs.Vector3QueueValue;
+            //拷贝eventArgs.Vector3QueueValue的值到path
+            path = new Queue<Vector3>(eventArgs.Vector3QueueValue);
+            
             isPassPath = true;
         }
     
