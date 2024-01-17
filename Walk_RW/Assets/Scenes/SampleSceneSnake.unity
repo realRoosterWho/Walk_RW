@@ -4947,7 +4947,7 @@ MonoBehaviour:
   maxDragDistance: 10
   power: 5
   grid: {fileID: 0}
-  Timer: 0.1
+  Timer: 0.5
   step: 1.4
   bodyPrefab: {fileID: 6089856552241186136, guid: 44e187b4c629c99418e93949ded32499, type: 3}
   bodyList:
@@ -6290,7 +6290,7 @@ Transform:
   m_GameObject: {fileID: 1413871114}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.6833763, y: -1.7603925, z: 0}
+  m_LocalPosition: {x: 0.8, y: -3.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
