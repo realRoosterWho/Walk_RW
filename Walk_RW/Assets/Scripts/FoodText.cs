@@ -30,6 +30,18 @@ public class FoodText : MonoBehaviour
         foodText.text = foodnum.ToString();
 		}
     }
+    
+    //如果和标签为“Wall”的东西碰撞，在RangeFood脚本中调用AddFood方法，随后销毁自己
+    private void OnTriggerEnter2D(Collider2D other)
+	{
+		if (other.tag == "Wall")
+		{
+			//在RangeFood脚本中调用AddFood方法
+			GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
+			//销毁自己
+			Destroy(gameObject);
+		}
+	}
 
     // Update is called once per frame
     void Update()
