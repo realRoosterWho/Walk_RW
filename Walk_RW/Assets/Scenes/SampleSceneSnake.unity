@@ -4666,11 +4666,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6922685532940574504, guid: 44e187b4c629c99418e93949ded32499, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.34
+      value: -0.85
       objectReference: {fileID: 0}
     - target: {fileID: 6922685532940574504, guid: 44e187b4c629c99418e93949ded32499, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3.2
+      value: -3.58
       objectReference: {fileID: 0}
     - target: {fileID: 6922685532940574504, guid: 44e187b4c629c99418e93949ded32499, type: 3}
       propertyPath: m_LocalPosition.z
@@ -6209,7 +6209,7 @@ GameObject:
   - component: {fileID: 1413871119}
   - component: {fileID: 1413871120}
   m_Layer: 0
-  m_Name: Triangle
+  m_Name: Agent
   m_TagString: AINav
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

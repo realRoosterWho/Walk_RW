@@ -9,6 +9,7 @@ public class GameEventArgs : EventArgs
     public int IntValue { get; set; }
     public float FloatValue { get; set; }
     public string StringValue { get; set; }
+    public Vector3 Vector3Value { get; set; }
     public List<Vector3> Vector3ListValue { get; set; }
     
     public Queue<Vector3> Vector3QueueValue { get; set; }

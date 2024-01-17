@@ -113,13 +113,17 @@ public class ThrowHead : MonoBehaviour
         if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 2))
         {
             isCanDrag = true;
-            // path.Clear();
+            path.Clear();
             return;
         }
+        
+
 
 
         if (isOneMove == false)
         {
+
+            
             EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OneMove);
             // //清空当前路径
             // path.Clear();
@@ -163,6 +167,16 @@ public class ThrowHead : MonoBehaviour
             // // 倒序
             // path = new Queue<Vector3>(new Stack<Vector3>(path));
             isOneMove = true;
+        }
+        
+        if (isPassPath == true)
+        {
+            //检查第一个路径节点是否是第一个蛇身的位置，如果是，去掉第一个节点的位置
+            // if (path.Count > 0 && bodyList.Count > 0 && Vector3.Distance(path.Peek(), bodyList[0].position ) < cellSize)
+            // {
+            //     path.Dequeue();
+            // }
+            isPassPath = false;
         }
         
        
@@ -215,7 +229,7 @@ public class ThrowHead : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log("碰撞");
-        if (other.CompareTag("Food"))
+        if (other.CompareTag("Food") && (isDragging == false))
         {
             int growthCount = other.GetComponent<FoodText>().foodnum;
             Destroy(other.gameObject); //销毁食物
@@ -255,6 +269,17 @@ public class ThrowHead : MonoBehaviour
     
     private void Update()
     {
+        
+        //如果有蛇身的位置不在瓷砖中心，那么将蛇身的位置设置为瓷砖中心
+        foreach (var body in bodyList)
+        {
+            // 将蛇身的新位置转换为最近的瓷砖中心
+            Vector3Int cellPos = grid.WorldToCell(body.position);
+            Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+            // 
+            // 使用瓷砖中心作为蛇身的新位置
+            body.position = cellCenterPos;
+        }
 
         if(isCanDrag == true)
         {
@@ -329,14 +354,18 @@ public class ThrowHead : MonoBehaviour
                 */
                 isDragging = false;
                 isCanDrag = false;
-                EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial);
+                
+                //如果蛇身存在,那么获取第一个蛇身的位置
+                Vector3 firstbody = bodyList.Count > 0 ? bodyList[0].position : HeadPos; //如果蛇身存在，那么获取第一个蛇身的位置，如果不存在，那么获取蛇头的位置
+                
+                EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial, new GameEventArgs(){Vector3Value = firstbody});
             }
         }
 
 
 
         // 检测“当头不再动”
-        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 0.1f)
+        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 1f)
         {
             // Debug.Log("头不再动");
             tileHeadPos();

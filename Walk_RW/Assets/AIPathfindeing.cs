@@ -13,6 +13,9 @@ public class AIPathfindeing : MonoBehaviour
     private bool isOneMove = false;
     private bool isPassPath = false;
     public Grid grid;
+    private GameObject gameObject_agent;
+    private GameObject gameObject_target;
+    private Vector3 currentFirstBodyPos;
     
     private Queue<Vector3> path = new Queue<Vector3>();
 
@@ -26,12 +29,19 @@ public class AIPathfindeing : MonoBehaviour
 
     void Start()
     {
+        //获取场景中名字叫Agent的gameobject
+        gameObject_agent = GameObject.Find("Agent");
+        
+        //获取场景中名字叫Agent的并且把他的NavMeshAgent赋值给agent
+        agent = GameObject.Find("Agent").GetComponent<NavMeshAgent>();
         
         //获取场景中名字叫springHead的并且把他的Transform赋值给Target
         target = GameObject.Find("springHead").GetComponent<Transform>();
         
-        //自己的位置跟随springHead
-        transform.position = target.position;
+        gameObject_target = GameObject.Find("springHead");
+        
+        //自己的位置跟随gameObject_agent下面第一个蛇身的位置
+        transform.position = gameObject_target.GetComponent<ThrowHead>().bodyList[0].transform.position;
         
         //获取场景中名字叫Grid的东西上面的Grid组件
         grid = GameObject.Find("Grid").GetComponent<Grid>();
@@ -47,6 +57,7 @@ public class AIPathfindeing : MonoBehaviour
         cellSize = grid.cellSize.x;
         
         agent = GetComponent<NavMeshAgent>();
+        
 
         agent.updateRotation = false;
         agent.updateUpAxis = false;
@@ -56,15 +67,21 @@ public class AIPathfindeing : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
+        //如果gameObject_agent为空
+        if (gameObject_agent == null)
+        {
+            //获取场景中名字叫Agent的gameobject
+            gameObject_agent = GameObject.Find("Agent");
+        }
 
         if (isOneMove) //在球已经出手而三角形还没有就位的时候
         {
             //获取AI所经过的所有格子的中心点
 
             Debug.Log("AI - isOneMove");
-            Vector3 currentPos = transform.position;
+            Vector3 currentPos = this.transform.position;
             Vector3Int cellPos = grid.WorldToCell(currentPos);
             Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
 
@@ -76,7 +93,7 @@ public class AIPathfindeing : MonoBehaviour
 
             // 如果上一次移动的位置和这一次的位置之间的距离大于一个cellSize，那么就在这两个路径节点之间插入一个路径节点，
             // 这个路径节点需要是瓷砖中心，并且取第一个路径节点的x坐标，取第二个路径节点的y坐标
-            if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > grid.cellSize.x)
+            if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > grid.cellSize.x && (lastCellCenterPos != Vector3.zero))
             {
                 Vector3Int lastCellPos = grid.WorldToCell(lastCellCenterPos);
                 // 计算中心点所在的格子的坐标
@@ -116,6 +133,7 @@ public class AIPathfindeing : MonoBehaviour
             }
             isPassPath = false;
             path.Clear();
+            lastCellCenterPos = Vector3.zero;
         }
 
 
@@ -126,7 +144,22 @@ public class AIPathfindeing : MonoBehaviour
     {
         if (gameEvent == EventManager.GameEvent.OnMove)
         {
-            //agent.isStopped = false;
+            
+            
+            // 如果target为空
+            if (target == null)
+            {
+                //获取场景中名字叫springHead的并且把他的Transform赋值给Target
+                target = GameObject.Find("springHead").GetComponent<Transform>();
+            }
+            
+            // 如果agent为空
+            if (agent == null)
+            {
+                //获取场景中名字叫Agent的并且把他的NavMeshAgent赋值给agent
+                agent = GameObject.Find("Agent").GetComponent<NavMeshAgent>();
+            }
+            agent.isStopped = false;
             agent.SetDestination(target.position);
             Debug.Log("AIOnMove");
         }
@@ -151,8 +184,34 @@ public class AIPathfindeing : MonoBehaviour
         if (gameEvent == EventManager.GameEvent.MoveInitial)
         {
             //agent.isStopped = true;
+            
+            //如果gameObject_agent为空
+            if (gameObject_agent == null)
+            {
+                //获取场景中名字叫Agent的gameobject
+                gameObject_agent = GameObject.Find("Agent");
+            }
+            
+            //agent 停止追踪
+            agent.isStopped = true;
+            
+            //将当前自己的GameObject的位置为gameEventArgs.Vector3Value
+            gameObject_agent.transform.SetPositionAndRotation(gameEventArgs.Vector3Value, gameObject_agent.transform.rotation);
+            
+            
+            currentFirstBodyPos = gameEventArgs.Vector3Value;
+            lastCellCenterPos = currentFirstBodyPos;
+            
             Debug.Log("AI - 开始AI移动 - Move Initial");
-            isOneMove = true;
+
+            if (gameObject_agent.transform.position == currentFirstBodyPos)
+            {
+                isOneMove = true;
+            }
+            
+
+            path.Clear();
+
         }
 
     }
