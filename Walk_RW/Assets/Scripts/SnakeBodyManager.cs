@@ -6,9 +6,13 @@ public class SnakeBodyManager : MonoBehaviour
 {
     
     public ThrowHead throwHead;
+    private bool isAlreadyGameOver = false;
+
     // Start is called before the first frame update
     void Start()
     {
+        //监听GameOver
+        EventManager.Instance.OnGameEvent += GameOverEvent;
 
     }
 
@@ -20,19 +24,16 @@ public class SnakeBodyManager : MonoBehaviour
 
     }
 
-    void OnTriggerEnter2D(Collider2D collider)
+    void OnTriggerEnter2D(Collider2D collision)
     {
-        // Debug.Log("身体碰撞");
-        // 检查碰撞的游戏对象是否是墙壁
-        if (collider.gameObject.CompareTag("Wall"))
+        // // 检查碰撞的游戏对象是否是墙壁
+        // if (collision.gameObject.CompareTag("Wall"))
+        // {
+        //     // 如果是墙壁，那么结束游戏
+        //     GameOver();
+        // }
+        if (collision.gameObject.CompareTag("Body"))
         {
-            // Debug.Log("身体碰撞墙壁");
-            // 如果是墙壁，那么结束游戏
-            GameOver();
-        }
-        if (collider.gameObject.CompareTag("Body"))
-        {
-            Debug.Log("身体碰撞身体");
             // 如果是身体，那么结束游戏
             GameOver();
         }
@@ -43,6 +44,14 @@ public class SnakeBodyManager : MonoBehaviour
         // 在这里添加结束游戏的代码
         Debug.Log("Game Over");
         
+        if (isAlreadyGameOver)
+        {
+            return;
+        }
+        
+        // 播放音效
+        SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[3]);
+        
         //读取ThrowHead下的身体数量
         int bodycount = throwHead.bodyList.Count;
         GameManager.Instance.GameOver(bodycount);
@@ -50,5 +59,20 @@ public class SnakeBodyManager : MonoBehaviour
         // 触发事件GameOver
         // 触发事件
         EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.GameOver);
+    }
+    
+    public void GameOverEvent(EventManager.GameEvent gameEvent, GameEventArgs eventArgs)
+    {
+        if (gameEvent == EventManager.GameEvent.GameOver)
+        {
+            // 在这里添加结束游戏的代码
+            Debug.Log("Game Over");
+            
+            isAlreadyGameOver = true;
+            
+            //读取ThrowHead下的身体数量
+            int bodycount = throwHead.bodyList.Count;
+            GameManager.Instance.GameOver(bodycount);
+        }
     }
 }

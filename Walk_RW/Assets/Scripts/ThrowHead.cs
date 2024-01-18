@@ -22,12 +22,14 @@ public class ThrowHead : MonoBehaviour
     private bool isDragging = false;
     private bool isOneMove = true;
     private bool isCanDrag = true;
+    private bool isGameOver = false;
     private float releaseTime = 0f;
     private float currentMaxDragDistance = 2f;
     private int totalGrowth = 0;
     private float cellSize;
     private bool isAIReady = false;
     private bool isPassPath = false;
+    private Vector2 unnormolizedDirection;
 
     private Vector2 direction;
 
@@ -61,6 +63,9 @@ public class ThrowHead : MonoBehaviour
         line.endWidth = 0.1f;
         //将line的图层设置高
         line.sortingOrder = 1;
+        
+        //设置line的颜色为#f85e59，整根line都是如此
+        line.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
 
         //初始化direction为向上
         direction = Vector2.up;
@@ -80,6 +85,7 @@ public class ThrowHead : MonoBehaviour
         
         
         EventManager.Instance.OnGameEvent += AIReady; //订阅事件
+        EventManager.Instance.OnGameEvent += GameOver;
 
         OnMove();
     }
@@ -191,6 +197,9 @@ public class ThrowHead : MonoBehaviour
                 return;
             }
             
+            // 播放音频
+           SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[0]);
+            
             // 从后往前开始移动蛇身
             for (int i = bodyList.Count - 2; i >= 0; i--)
             {
@@ -237,6 +246,19 @@ public class ThrowHead : MonoBehaviour
             //添加食物
             GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
         }
+            
+    }
+    
+    //检测碰撞Collider
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        // 检查碰撞的游戏对象是否是墙壁
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[1], 1f);
+        }
+
+
     }
     
     private void OnTriggerStay2D(Collider2D other)
@@ -280,12 +302,17 @@ public class ThrowHead : MonoBehaviour
             // 使用瓷砖中心作为蛇身的新位置
             body.position = cellCenterPos;
         }
+        
+        //如果游戏结束，那么isCanDrag为false
+        if (isGameOver == true)
+        {
+            isCanDrag = false;
+        }
 
         if(isCanDrag == true)
         {
             if (Input.GetMouseButtonDown(0)) //按下鼠标左键
             {
-                // Debug.Log("按下鼠标左键");
                 startPos = rb.position;
                 line.enabled = true;
                 line.SetPosition(0, startPos);
@@ -294,7 +321,8 @@ public class ThrowHead : MonoBehaviour
             if (Input.GetMouseButton(0)) //按住鼠标左键
             {
                 Vector2 currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                direction = startPos - currentPos;
+                direction = rb.position - currentPos;
+                unnormolizedDirection = direction;
                 float distance = direction.magnitude;
                 currentMaxDragDistance = maxDragDistance;
 
@@ -329,14 +357,17 @@ public class ThrowHead : MonoBehaviour
                     direction = direction.normalized * currentMaxDragDistance;
                 }
 
-                rb.position = startPos - direction;
-                line.SetPosition(1, rb.position);
+                // 不改变蛇头的位置，而是改变线渲染的位置
+                line.SetPosition(1, startPos - direction);
                 isDragging = true;
             }
 
             if (Input.GetMouseButtonUp(0) && isDragging) //松开鼠标左键
             {
-                Vector2 force = (startPos - rb.position) * power;
+                SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[2], 0.5f);
+
+                // 将力的方向反过来
+                Vector2 force = (-direction) * power;
 
                 //如果force没有到达最小值，那么设定为最小值
                 if (force.magnitude < 1f)
@@ -348,16 +379,12 @@ public class ThrowHead : MonoBehaviour
                 line.enabled = false;
                 releaseTime = Time.time;
 
-                /*
-                // 将蛇头的移动路径添加到队列中
-                path.Enqueue(rb.position);
-                */
                 isDragging = false;
                 isCanDrag = false;
-                
+
                 //如果蛇身存在,那么获取第一个蛇身的位置
                 Vector3 firstbody = bodyList.Count > 0 ? bodyList[0].position : HeadPos; //如果蛇身存在，那么获取第一个蛇身的位置，如果不存在，那么获取蛇头的位置
-                
+
                 EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial, new GameEventArgs(){Vector3Value = firstbody});
             }
         }
@@ -365,7 +392,7 @@ public class ThrowHead : MonoBehaviour
 
 
         // 检测“当头不再动”
-        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.5f && Time.time - releaseTime > 1f)
+        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 2f && Time.time - releaseTime > 1f)
         {
             // Debug.Log("头不再动");
             tileHeadPos();
@@ -431,5 +458,15 @@ public class ThrowHead : MonoBehaviour
             isPassPath = true;
         }
     
+    }
+    
+    public void GameOver(EventManager.GameEvent gameEvent, GameEventArgs eventArgs)
+    {
+        if (gameEvent == EventManager.GameEvent.GameOver)
+        {
+            Debug.Log("GameOver - SpringHeadGet");
+            //清空当前路径
+            isGameOver = true;
+        }
     }
 }
