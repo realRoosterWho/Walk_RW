@@ -23,6 +23,8 @@ public class AIPathfindeing : MonoBehaviour
     
     private Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
 
+	private bool isMoveInitialed = false;
+
 
     
 
@@ -76,6 +78,28 @@ public class AIPathfindeing : MonoBehaviour
             gameObject_agent = GameObject.Find("Agent");
         }
 
+
+		if (isMoveInitialed)
+		{
+			// 如果target为空
+            if (target == null)
+            {
+                //获取场景中名字叫springHead的并且把他的Transform赋值给Target
+                target = GameObject.Find("springHead").GetComponent<Transform>();
+            }
+            
+            // 如果agent为空
+            if (agent == null)
+            {
+                //获取场景中名字叫Agent的并且把他的NavMeshAgent赋值给agent
+                agent = GameObject.Find("Agent").GetComponent<NavMeshAgent>();
+            }
+            agent.isStopped = false;
+            agent.SetDestination(target.position);
+            Debug.Log("AIOnMove");
+		}
+
+		
         if (isOneMove) //在球已经出手而三角形还没有就位的时候
         {
             //获取AI所经过的所有格子的中心点
@@ -175,6 +199,7 @@ public class AIPathfindeing : MonoBehaviour
             Debug.Log("AI - 结束AI移动 - OneMove");
             isOneMove = false;
             isPassPath = true;
+			isMoveInitialed = false;
         }
 
     }
@@ -184,6 +209,8 @@ public class AIPathfindeing : MonoBehaviour
         if (gameEvent == EventManager.GameEvent.MoveInitial)
         {
             //agent.isStopped = true;
+
+			isMoveInitialed = true;
             
             //如果gameObject_agent为空
             if (gameObject_agent == null)

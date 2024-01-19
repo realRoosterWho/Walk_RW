@@ -8,13 +8,20 @@ public class FoodText : MonoBehaviour
     
     public TextMeshPro foodText;
     public int foodnum ;
-	public bool isRandomFood = true;
+	public bool isRandomFood = false;
 	public float bornTime;
     
     private Vector2 currenToScreenPoint;
     // Start is called before the first frame update
     void Start()
     {
+		//寻找场上的RangeFood
+		GameObject rangeFood = GameObject.Find("RangeFood");
+
+		int foodmax = rangeFood.GetComponent<RangeFood>().foodMax;
+		int foodmin = rangeFood.GetComponent<RangeFood>().foodMin;
+		
+		
 	    //关闭spriteRenderer组件
 	    SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
 	    if (spriteRenderer != null)
@@ -36,7 +43,7 @@ public class FoodText : MonoBehaviour
 		if (isRandomFood == true)
 		{
         // 随机生成1~3的整数
-        foodnum = Random.Range(1, 4);
+        foodnum = Random.Range(foodmin, foodmax);
 		}
 		
 		//获取物体上的TextMeshPro,并将其赋值给foodText
@@ -76,6 +83,8 @@ public class FoodText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
+		
 
         //该物体在生成0.1秒后才打开spriteRenderer和textMeshPro组件(如果有)
         if (Time.time - bornTime> 0.1f)

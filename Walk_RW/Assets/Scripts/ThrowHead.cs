@@ -172,6 +172,10 @@ public class ThrowHead : MonoBehaviour
 
             // // 倒序
             // path = new Queue<Vector3>(new Stack<Vector3>(path));
+            
+            
+            
+            
             isOneMove = true;
         }
         
@@ -182,6 +186,17 @@ public class ThrowHead : MonoBehaviour
             // {
             //     path.Dequeue();
             // }
+            
+            //检查第一个路径节点是否是第一个或者第二个蛇身的位置，如果是，去掉这个节点
+            if (path.Count > 0 && bodyList.Count > 1)
+            {
+                // 检查第一个路径节点是否是第一个或者第二个蛇身的位置
+                if (Vector3.Distance(path.Peek(), bodyList[0].position) < cellSize || Vector3.Distance(path.Peek(), bodyList[1].position) < cellSize)
+                {
+                    // 如果是，去掉这个节点
+                    path.Dequeue();
+                }
+            }
             isPassPath = false;
         }
         
@@ -240,11 +255,22 @@ public class ThrowHead : MonoBehaviour
         Debug.Log("碰撞");
         if (other.CompareTag("Food") && (isDragging == false))
         {
-            int growthCount = other.GetComponent<FoodText>().foodnum;
-            Destroy(other.gameObject); //销毁食物
-            this.Grow(growthCount); //生长尾巴
-            //添加食物
-            GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
+            // 获取所有子物体中的FoodText组件
+            FoodText[] foodTexts = other.GetComponentsInChildren<FoodText>();
+
+            foreach (FoodText foodText in foodTexts)
+            {
+                // 确保组件来自于子物体而不是父物体
+                if (foodText.transform != other.transform)
+                {
+                    int growthCount = foodText.foodnum;
+                    Destroy(other.gameObject); // 销毁食物
+                    this.Grow(growthCount); // 生长尾巴
+                    // 添加食物
+                    GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
+                    break; // 如果找到一个子物体的FoodText就跳出循环
+                }
+            }
         }
             
     }
@@ -256,6 +282,12 @@ public class ThrowHead : MonoBehaviour
         if (other.gameObject.CompareTag("Wall"))
         {
             SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[1], 1f);
+        }
+        
+        // 如果头碰撞的对象的标签是body，那么游戏结束
+        if (other.gameObject.CompareTag("Body"))
+        {
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.GameOver);
         }
 
 

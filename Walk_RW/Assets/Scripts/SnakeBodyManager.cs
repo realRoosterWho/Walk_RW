@@ -34,6 +34,12 @@ public class SnakeBodyManager : MonoBehaviour
         // }
         if (collision.gameObject.CompareTag("Body"))
         {
+            //将自身和对方的SpriteRenderer颜色设置为FF5F5F
+            gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 0.372549f, 0.372549f);
+            collision.gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 0.372549f, 0.372549f);
+            
+            
+            
             // 如果是身体，那么结束游戏
             GameOver();
         }

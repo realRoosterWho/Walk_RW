@@ -5,7 +5,13 @@ public class RangeFood : MonoBehaviour
 {
     [Header("食物的所有图片链表")] public List<Sprite> FoodSpriteList;
     [Header("食物预设")] public GameObject FoodPrefab;
-    [Header("确保场上只有一个food")]bool isOnlyFood = true;
+    [Header("确保场上只有一个food")]public bool isOnlyFood = true;
+
+	//设置食物上数量的上限和下限（当自动生成食物时)
+ 	public bool isAutoFood = true;
+	public int foodMax = 4;
+	public int foodMin = 1;
+
 
     void Start()
     {
@@ -15,10 +21,15 @@ public class RangeFood : MonoBehaviour
     //添加一个食物
     public void AddFood()
     {
+        if (isAutoFood == false)
+        {
+            return;
+        }
+        
         GameObject food = GameObject.Instantiate(FoodPrefab); //克隆一个食物的预制体
         food.transform.parent = this.transform.parent;
         food.transform.localPosition = new Vector3(Random.Range(Const.WidthminX, Const.WidthmaxX),
-            Random.Range(Const.HeightminY, Const.HeightmaxY), 0); //在这里给食物赋值一个随机的位置
+        Random.Range(Const.HeightminY, Const.HeightmaxY), 0); //在这里给食物赋值一个随机的位置
         food.transform.localScale = Vector3.one; //让缩放为1
 
     }

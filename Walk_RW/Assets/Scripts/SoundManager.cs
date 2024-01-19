@@ -20,7 +20,7 @@ public class SoundManager : MonosingletonTemp<SoundManager>
     {
         Debug.Log("SoundManager Init");
     }
-    public void PlayMusic(AudioClip clip, float volume = 0.3f, bool loop = true)
+    public void PlayMusic(AudioClip clip, float volume = 1f, bool loop = true)
     {
         musicSource.clip = clip;
         musicSource.loop = loop;
@@ -28,7 +28,7 @@ public class SoundManager : MonosingletonTemp<SoundManager>
         musicSource.Play();
     }
     
-    public void PlaySFX(AudioClip clip, float volume = 0.3f)
+    public void PlaySFX(AudioClip clip, float volume = 1f)
     {
         sfxSource.clip = clip;
         sfxSource.volume = volume;
