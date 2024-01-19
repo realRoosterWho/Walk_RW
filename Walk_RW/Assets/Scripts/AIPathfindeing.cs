@@ -32,10 +32,10 @@ public class AIPathfindeing : MonoBehaviour
     void Start()
     {
         //获取场景中名字叫Agent的gameobject
-        gameObject_agent = GameObject.Find("Agent");
+        gameObject_agent = GameObject.FindWithTag("AINav");
         
         //获取场景中名字叫Agent的并且把他的NavMeshAgent赋值给agent
-        agent = GameObject.Find("Agent").GetComponent<NavMeshAgent>();
+        agent = GameObject.FindWithTag("AINav").GetComponent<NavMeshAgent>();
         
         //获取场景中名字叫springHead的并且把他的Transform赋值给Target
         target = GameObject.Find("springHead").GetComponent<Transform>();
