@@ -5,34 +5,37 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
-    path: Assets/Scenes/TempLevel_Endless.unity
-    guid: 71ca07233db20c64ba0291bb0e2c91f8
-  - enabled: 1
-    path: Assets/Scenes/SampleSceneSnake 1.unity
-    guid: dd1965ca4fe56408c8836c8adfd2f719
-  - enabled: 1
-    path: Assets/Scenes/Levels_for_real/TempLevel.unity
-    guid: 3396695540d9e42d1bc447de4f145652
+    path: Assets/Scenes/Levels_for_real/Level 2.unity
+    guid: b9325cea5fced470eba4781c4b530265
   - enabled: 1
     path: Assets/Scenes/Levels_for_real/Level 1.unity
     guid: cc05725f123ef4884bfe5332d5455087
   - enabled: 1
-    path: Assets/Scenes/Levels_for_real/Level 2.unity
-    guid: b9325cea5fced470eba4781c4b530265
+    path: Assets/Scenes/Levels_for_real/Main.unity
+    guid: 768d1ba07c5634f22a3024c03b1d82e8
+  - enabled: 1
+    path: Assets/Scenes/Levels_for_real/Select.unity
+    guid: 1252c07400040409aaea7af89484b435
+  - enabled: 1
+    path: Assets/Scenes/Levels_for_real/Congra.unity
+    guid: f6b32f52e20ab49079c30391459722db
   - enabled: 1
     path: Assets/Scenes/Levels_for_real/Level 3.unity
     guid: e46831149a8394be8bf7c9ec6b0f43bd
   - enabled: 1
     path: Assets/Scenes/Levels_for_real/Level 4.unity
-    guid: 194a25477c5a24901a79be6d6fb740dc
+    guid: 8219dc6a73cfd4ef89a415e8751186ec
   - enabled: 1
     path: Assets/Scenes/Levels_for_real/Level 5.unity
     guid: f08adc39c0f8542f5881c373f31b67c1
   - enabled: 1
     path: Assets/Scenes/Levels_for_real/Level 6.unity
     guid: bb984b19b0e21483a952b76246a29ea3
+  - enabled: 1
+    path: Assets/Scenes/Levels_for_real/Level 7.unity
+    guid: 194a25477c5a24901a79be6d6fb740dc
+  - enabled: 1
+    path: Assets/Scenes/Levels_for_real/Endless.unity
+    guid: 72c1eb85e4d1148c1acdefafd5f41134
   m_configObjects: {}

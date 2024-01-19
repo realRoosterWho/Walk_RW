@@ -22,6 +22,12 @@ public class SoundManager : MonosingletonTemp<SoundManager>
     }
     public void PlayMusic(AudioClip clip, float volume = 1f, bool loop = true)
     {
+		//查看当前正在播放的音乐和要播放的音乐是否相同
+		if (musicSource.clip == clip)
+        {
+            return;
+        }
+		
         musicSource.clip = clip;
         musicSource.loop = loop;
         musicSource.volume = volume;

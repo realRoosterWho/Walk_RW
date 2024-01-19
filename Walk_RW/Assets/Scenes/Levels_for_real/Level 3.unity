@@ -21650,7 +21650,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u5C0F\u5FC3\uFF01\u4E0D\u8981\u8BA9\u8EAB\u4F53\u4EA4\u53C9\uFF01"
+  m_text: Be careful! Don't let the body cross!
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f310a76a745a34b64b81a71075e0794f, type: 2}
   m_sharedMaterial: {fileID: 6592499644054298175, guid: f310a76a745a34b64b81a71075e0794f, type: 2}
@@ -22368,9 +22368,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxDragDistance: 10
   power: 10
-  grid: {fileID: 0}
+  grid: {fileID: 15398967}
   Timer: 0.1
   step: 1.4
+  isUI: 0
   bodyPrefab: {fileID: 6089856552241186136, guid: 44e187b4c629c99418e93949ded32499, type: 3}
   bodyList:
   - {fileID: 1117713579}
@@ -26215,8 +26216,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   notes:
-  - "\u5934\u649E\u5230\u5899\u58C1\u53EF\u4EE5\u53CD\u5F39"
-  - "\u5229\u7528\u8FD9\u4E00\u70B9\uFF01"
+  - The head can bounce off the walls upon impact.
+  - The head can bounce off the walls upon impact.
   textMeshPro: {fileID: 0}
 --- !u!114 &1293701546
 MonoBehaviour:

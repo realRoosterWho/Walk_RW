@@ -9,7 +9,8 @@ public class NextScene : MonoBehaviour
     public string scenename = "Scene1";
     public bool isLevel = true;
     private bool isReadyToChange = false;
-    private bool wasReadyToChange = false;
+    private bool wasReadyToChange;
+	public float waitTime2 = 0.0f;
 
 
     public Sprite sprite;
@@ -18,19 +19,25 @@ public class NextScene : MonoBehaviour
     // Start is called before the first frame update
     // Update is called once per frame
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        Debug.Log("Collision");
-        if (other.gameObject.CompareTag("Player"))
-        {
-            GameManager.Instance.LevelChange++;
-            SceneManager.LoadScene(scenename);
-            Debug.Log(GameManager.Instance.LevelChange);
-        }
-    }
+
+   void OnTriggerEnter2D(Collider2D other)
+	{
+    	Debug.Log("Collision");
+    	if (other.gameObject.CompareTag("Player") && isReadyToChange)
+    	{
+            SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[4]);
+
+        StartCoroutine(WaitAndChange(waitTime2));
+    	}
+	}
+   
 
     void Update()
     {
+
+
+
+		
         if(!wasReadyToChange && isReadyToChange)
         {
          //等一秒
@@ -81,5 +88,14 @@ public class NextScene : MonoBehaviour
             SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[4]);
 
         }
+		
     }
+		IEnumerator WaitAndChange(float waitTime2)
+		{
+		    yield return new WaitForSeconds(waitTime2);
+            //等待之后执行的动作
+            GameManager.Instance.LevelChange++;
+            SceneManager.LoadScene(scenename);
+            Debug.Log(GameManager.Instance.LevelChange);
+		}
 }

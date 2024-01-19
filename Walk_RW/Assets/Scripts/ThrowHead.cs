@@ -30,6 +30,7 @@ public class ThrowHead : MonoBehaviour
     private bool isAIReady = false;
     private bool isPassPath = false;
     private Vector2 unnormolizedDirection;
+	public bool isUI = false;
 
     private Vector2 direction;
 
@@ -45,6 +46,9 @@ public class ThrowHead : MonoBehaviour
 
     private void Start()
     {
+        
+        //获取grid
+        grid = GameObject.Find("Grid").GetComponent<Grid>();
         rb = GetComponent<Rigidbody2D>();
         if (rb == null)
         {
@@ -70,8 +74,10 @@ public class ThrowHead : MonoBehaviour
         //初始化direction为向上
         direction = Vector2.up;
         
-        //获取场景中名字叫Grid的东西上面的Grid组件
+        //获取场景中的Grid组件，用非常保险的方式
         grid = GameObject.Find("Grid").GetComponent<Grid>();
+        
+        
         
         //检查网格的cellSizeXY是否相等
         if (grid.cellSize.x != grid.cellSize.y)
@@ -323,6 +329,27 @@ public class ThrowHead : MonoBehaviour
     
     private void Update()
     {
+
+		//如果是UI，那么检测鼠标单击，并且直接将头传送到鼠标位置
+		if (isUI == true)
+		{
+			isCanDrag = false;
+			if (Input.GetMouseButtonDown(0)) //按下鼠标左键
+				{
+				    // 将蛇头的新位置转换到鼠标为止
+					Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+					gameObject.transform.position = mousePos;
+					// 速度变成0
+					rb.velocity = Vector2.zero;
+					Vector3 firstbody = bodyList.Count > 0 ? bodyList[0].position : HeadPos; //如果蛇身存在，那么获取第一个蛇身的位置，如果不存在，那么获取蛇头的位置
+
+					EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial, new GameEventArgs(){Vector3Value = firstbody});
+
+					SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[2], 0.5f);
+
+                }
+		}
+		
         
         //如果有蛇身的位置不在瓷砖中心，那么将蛇身的位置设置为瓷砖中心
         foreach (var body in bodyList)

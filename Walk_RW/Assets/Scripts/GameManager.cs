@@ -28,6 +28,23 @@ public class GameManager : MonosingletonTemp<GameManager>
     {
         Debug.Log("GameManager OnSceneLoaded");
 
+
+		//如果当前场景名称是Congra，那么播放音乐
+		if (SceneManager.GetActiveScene().name == "Congra")
+	    {
+		    SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[1]);
+		}
+		//如果当前场景名称是Main，那么播放音乐
+		else if (SceneManager.GetActiveScene().name == "Main" | SceneManager.GetActiveScene().name == "Select")
+	    {
+		    SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[1]);
+		}
+		else
+		{
+			SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[0]);
+		}
+		
+
         // 寻找新的场景里面的带有GameOverScreen组件的东西，即便他没有被激活
         foreach (var gameOverScreen in Resources.FindObjectsOfTypeAll<GameOverScreen>())
         {
@@ -81,6 +98,22 @@ public class GameManager : MonosingletonTemp<GameManager>
     void Start()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+        //如果当前场景名称是Congra，那么播放音乐
+        if (SceneManager.GetActiveScene().name == "Congra")
+        {
+            SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[1]);
+        }
+        //如果当前场景名称是Main，那么播放音乐
+        else if (SceneManager.GetActiveScene().name == "Main" | SceneManager.GetActiveScene().name == "Select")
+        {
+            SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[1]);
+        }
+        else
+        {
+            SoundManager.Instance.PlayMusic(SoundManager.Instance.MusicClipList[0]);
+        }
+
     }
 
     // Update is called once per frame
