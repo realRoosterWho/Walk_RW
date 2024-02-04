@@ -69,8 +69,7 @@ public class ThrowHead : MonoBehaviour
         line.sortingOrder = 1;
         
         //设置line的颜色为#f85e59，整根line都是如此
-        line.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
-
+        line.material = new Material(Shader.Find("Particle Alpha Blend"));
         //初始化direction为向上
         direction = Vector2.up;
         

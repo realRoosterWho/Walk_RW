@@ -44,4 +44,12 @@ public class Menu : MonoBehaviour
         //切换到场景"Infinite"
         SceneManager.LoadScene("Endless");
     }
+
+    public void ChangeToMain()
+    {
+        SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[0]);
+        SceneManager.LoadScene("Main");
+
+        
+    }
 }

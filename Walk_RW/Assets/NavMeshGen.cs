@@ -35,9 +35,9 @@ public class NavMeshGen : MonoBehaviour
         }
 
         Surface2D.BuildNavMeshAsync();
-
+        
         //生成预制体
-        Instantiate(prefab, transform.position, Quaternion.identity);
+        // Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
     }
 
     // Update is called once per frame
