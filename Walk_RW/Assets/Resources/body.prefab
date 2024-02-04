@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 97affd873e3b9434a82dfc24b2a9592e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 40db14f958c484d3ba0a8e10c0722ee3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -123,7 +123,7 @@ CapsuleCollider2D:
   m_GameObject: {fileID: 6089856552241186136}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 073d704d8fc13454481e685546e36dd5, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -147,7 +147,7 @@ CapsuleCollider2D:
   m_UsedByEffector: 1
   m_UsedByComposite: 0
   m_Offset: {x: -0.0055224895, y: 0}
-  m_Size: {x: 0.4718025, y: 0.50135094}
+  m_Size: {x: 0.8269838, y: 0.8269838}
   m_Direction: 0
 --- !u!114 &3393172335970213067
 MonoBehaviour:

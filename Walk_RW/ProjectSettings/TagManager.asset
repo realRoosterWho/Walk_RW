@@ -7,6 +7,8 @@ TagManager:
   - Food
   - Wall
   - Body
+  - AINav
+  - NavMesh
   layers:
   - Default
   - TransparentFX
@@ -43,4 +45,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Higer
+    uniqueID: 3275530943
     locked: 0

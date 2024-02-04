@@ -6,6 +6,7 @@ public class ThrowHead : MonoBehaviour
 {
     public float maxDragDistance = 2f;
     public float power = 10f;
+    public Grid grid;
 
     private Rigidbody2D rb;
     private Vector2 startPos;
@@ -13,7 +14,7 @@ public class ThrowHead : MonoBehaviour
     private Coroutine moveCoroutine;
     
     public float Timer; //游戏速度
-    public int step; //蛇头的移动距离
+    public float step; //蛇头的移动距离
     private int X; //移动的增量值
     private int Y; //移动的增量值
     private Vector3 HeadPos; //蛇头的坐标
@@ -21,9 +22,15 @@ public class ThrowHead : MonoBehaviour
     private bool isDragging = false;
     private bool isOneMove = true;
     private bool isCanDrag = true;
+    private bool isGameOver = false;
     private float releaseTime = 0f;
     private float currentMaxDragDistance = 2f;
     private int totalGrowth = 0;
+    private float cellSize;
+    private bool isAIReady = false;
+    private bool isPassPath = false;
+    private Vector2 unnormolizedDirection;
+	public bool isUI = false;
 
     private Vector2 direction;
 
@@ -36,8 +43,12 @@ public class ThrowHead : MonoBehaviour
     // 蛇头的移动路径
     private Queue<Vector3> path = new Queue<Vector3>();
 
+
     private void Start()
     {
+        
+        //获取grid
+        grid = GameObject.Find("Grid").GetComponent<Grid>();
         rb = GetComponent<Rigidbody2D>();
         if (rb == null)
         {
@@ -54,9 +65,32 @@ public class ThrowHead : MonoBehaviour
 
         line.startWidth = 0.1f;
         line.endWidth = 0.1f;
-
+        //将line的图层设置高
+        line.sortingOrder = 1;
+        
+        //设置line的颜色为#f85e59，整根line都是如此
+        line.material = new Material(Shader.Find("Particle Alpha Blend"));
         //初始化direction为向上
         direction = Vector2.up;
+        
+        //获取场景中的Grid组件，用非常保险的方式
+        grid = GameObject.Find("Grid").GetComponent<Grid>();
+        
+        
+        
+        //检查网格的cellSizeXY是否相等
+        if (grid.cellSize.x != grid.cellSize.y)
+        {
+            Debug.LogError("The cellSizeXY of the grid is not equal.");
+            return;
+        }
+        
+        //记录网格的cellSize
+        cellSize = grid.cellSize.x;
+        
+        
+        EventManager.Instance.OnGameEvent += AIReady; //订阅事件
+        EventManager.Instance.OnGameEvent += GameOver;
 
         OnMove();
     }
@@ -71,32 +105,104 @@ public class ThrowHead : MonoBehaviour
         // 计算蛇头的移动方向，也就是现在的第一节身体的位置减去蛇头的位置
         Vector3 moveDirection = bodyList.Count > 0 ? bodyList[0].position - HeadPos : direction * step;
         
+        // 计算蛇头的新位置
+        Vector3 headPos = gameObject.transform.position;
+
+        // 将蛇头的新位置转换为最近的瓷砖中心
+        Vector3Int cellPos = grid.WorldToCell(headPos);
+        Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+        // 
+        // 使用瓷砖中心作为蛇头的新位置
+        headPos = cellCenterPos;
+        gameObject.transform.position = headPos;
+        // 速度变成0
+        rb.velocity = Vector2.zero;
+
+
+        
         // 如果蛇身存在且蛇头和第一节身体的距离小于或等于一个步长，那么不执行移动
-        if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 1.5))
+        if (bodyList.Count > 0 && Vector3.Distance(HeadPos, bodyList[0].position) <= (step * 2))
         {
             isCanDrag = true;
             path.Clear();
             return;
         }
+        
+
 
 
         if (isOneMove == false)
         {
-            //清空当前路径
-            path.Clear();
+
             
-            // 将蛇头的移动路径分解为一系列的正交步骤
-            int steps = Mathf.RoundToInt(Mathf.Max(Mathf.Abs(moveDirection.x), Mathf.Abs(moveDirection.y)));
-            Vector3 stepDirection = moveDirection / steps;
-            for (int i = 0; i < steps; i++)
-            {
-                // 将每个步骤添加到路径中
-                path.Enqueue(HeadPos + stepDirection * i);
-            }
-        
-            // 倒序
-            path = new Queue<Vector3>(new Stack<Vector3>(path));
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OneMove);
+            // //清空当前路径
+            // path.Clear();
+            //
+            // //修改路径设计，使得路径也按照网格走
+            // int steps = Mathf.RoundToInt(Mathf.Max(Mathf.Abs(moveDirection.x), Mathf.Abs(moveDirection.y))); // 计算移动的步数
+            // Vector3 stepDirection = moveDirection / steps;
+            // Vector3 lastCellCenterPos = Vector3.zero; // 记录上一次移动的位置
+            // for (int i = 0; i < steps; i++)
+            // {
+            //     // 计算每一步的世界坐标
+            //     Vector3 worldPos = HeadPos + stepDirection * i;
+            //
+            //     // 将世界坐标转换为最近的瓷砖中心
+            //     cellPos = grid.WorldToCell(worldPos);
+            //     cellCenterPos = grid.GetCellCenterWorld(cellPos);
+            //     
+            //     // 如果上一次移动的位置和这一次移动的位置一样，那么不要添加
+            //     if (cellCenterPos == lastCellCenterPos)
+            //     {
+            //         continue;
+            //     }
+            //
+            //     // 如果上一次移动的位置和这一次的位置之间的距离大于一个cellSize，那么就在这两个路径节点之间插入一个路径节点，这个路径节点需要是瓷砖中心，并且取第一个路径节点的x坐标，取第二个路径节点的y坐标
+            //     if (Vector3.Distance(lastCellCenterPos, cellCenterPos) > cellSize)
+            //     {
+            //         Vector3Int lastCellPos = grid.WorldToCell(lastCellCenterPos);
+            //         Vector3Int currentCellPos = grid.WorldToCell(cellCenterPos);
+            //         Vector3Int insertCellPos = new Vector3Int(lastCellPos.x, currentCellPos.y, 0);
+            //         Vector3 insertCellCenterPos = grid.GetCellCenterWorld(insertCellPos);
+            //         path.Enqueue(insertCellCenterPos);
+            //     }
+            //
+            //     // 将瓷砖中心添加到路径中
+            //     path.Enqueue(cellCenterPos);
+            //
+            //     // 记录这一次的移动位置，以便下一次循环时使用
+            //     lastCellCenterPos = cellCenterPos;
+            // }
+
+            // // 倒序
+            // path = new Queue<Vector3>(new Stack<Vector3>(path));
+            
+            
+            
+            
             isOneMove = true;
+        }
+        
+        if (isPassPath == true)
+        {
+            //检查第一个路径节点是否是第一个蛇身的位置，如果是，去掉第一个节点的位置
+            // if (path.Count > 0 && bodyList.Count > 0 && Vector3.Distance(path.Peek(), bodyList[0].position ) < cellSize)
+            // {
+            //     path.Dequeue();
+            // }
+            
+            //检查第一个路径节点是否是第一个或者第二个蛇身的位置，如果是，去掉这个节点
+            if (path.Count > 0 && bodyList.Count > 1)
+            {
+                // 检查第一个路径节点是否是第一个或者第二个蛇身的位置
+                if (Vector3.Distance(path.Peek(), bodyList[0].position) < cellSize || Vector3.Distance(path.Peek(), bodyList[1].position) < cellSize)
+                {
+                    // 如果是，去掉这个节点
+                    path.Dequeue();
+                }
+            }
+            isPassPath = false;
         }
         
        
@@ -110,6 +216,9 @@ public class ThrowHead : MonoBehaviour
                 isOneMove = false;
                 return;
             }
+            
+            // 播放音频
+           SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[0]);
             
             // 从后往前开始移动蛇身
             for (int i = bodyList.Count - 2; i >= 0; i--)
@@ -149,24 +258,119 @@ public class ThrowHead : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log("碰撞");
-        if (other.CompareTag("Food"))
+        if (other.CompareTag("Food") && (isDragging == false))
         {
-            int growthCount = other.GetComponent<FoodText>().foodnum;
-            Destroy(other.gameObject); //销毁食物
-            this.Grow(growthCount); //生长尾巴
-            //添加食物
-            GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
+            // 获取所有子物体中的FoodText组件
+            FoodText[] foodTexts = other.GetComponentsInChildren<FoodText>();
+
+            foreach (FoodText foodText in foodTexts)
+            {
+                // 确保组件来自于子物体而不是父物体
+                if (foodText.transform != other.transform)
+                {
+                    int growthCount = foodText.foodnum;
+                    Destroy(other.gameObject); // 销毁食物
+                    this.Grow(growthCount); // 生长尾巴
+                    // 添加食物
+                    GameObject.Find("RangeFood").GetComponent<RangeFood>().AddFood();
+                    break; // 如果找到一个子物体的FoodText就跳出循环
+                }
+            }
         }
+            
+    }
+    
+    //检测碰撞Collider
+    private void OnCollisionEnter2D(Collision2D other)
+    {
+        // 检查碰撞的游戏对象是否是墙壁
+        if (other.gameObject.CompareTag("Wall"))
+        {
+            SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[1], 1f);
+        }
+        
+        // 如果头碰撞的对象的标签是body，那么游戏结束
+        if (other.gameObject.CompareTag("Body"))
+        {
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.GameOver);
+        }
+
+
+    }
+    
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        // 获取在蛇头位置和一定半径内的所有碰撞器
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, 1f);
+
+        // 遍历所有碰撞器
+        foreach (var collider in colliders)
+        {
+            if (collider.CompareTag("AINav"))
+            {
+                isAIReady = true;
+                // Debug.Log("碰撞AINav");
+                return; // 如果找到了带有"AINav"标签的物体，就直接返回
+            }
+        }
+
+        // 如果没有找到带有"AINav"标签的物体，就将isAIReady设置为false
+        isAIReady = false;
     }
 
+    private void FixedUpdate()
+    {
+        isAIReady = false;
+
+        
+        
+    }
+    
     private void Update()
     {
+
+		//如果是UI，那么检测鼠标单击，并且直接将头传送到鼠标位置
+		if (isUI == true)
+		{
+			isCanDrag = false;
+			if (Input.GetMouseButtonDown(0)) //按下鼠标左键
+				{
+				    // 将蛇头的新位置转换到鼠标为止
+					Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+					gameObject.transform.position = mousePos;
+					// 速度变成0
+					rb.velocity = Vector2.zero;
+					Vector3 firstbody = bodyList.Count > 0 ? bodyList[0].position : HeadPos; //如果蛇身存在，那么获取第一个蛇身的位置，如果不存在，那么获取蛇头的位置
+
+					EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial, new GameEventArgs(){Vector3Value = firstbody});
+
+					SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[2], 0.5f);
+
+                }
+		}
+		
         
+        //如果有蛇身的位置不在瓷砖中心，那么将蛇身的位置设置为瓷砖中心
+        foreach (var body in bodyList)
+        {
+            // 将蛇身的新位置转换为最近的瓷砖中心
+            Vector3Int cellPos = grid.WorldToCell(body.position);
+            Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+            // 
+            // 使用瓷砖中心作为蛇身的新位置
+            body.position = cellCenterPos;
+        }
+        
+        //如果游戏结束，那么isCanDrag为false
+        if (isGameOver == true)
+        {
+            isCanDrag = false;
+        }
+
         if(isCanDrag == true)
         {
             if (Input.GetMouseButtonDown(0)) //按下鼠标左键
             {
-                Debug.Log("按下鼠标左键");
                 startPos = rb.position;
                 line.enabled = true;
                 line.SetPosition(0, startPos);
@@ -175,7 +379,8 @@ public class ThrowHead : MonoBehaviour
             if (Input.GetMouseButton(0)) //按住鼠标左键
             {
                 Vector2 currentPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                direction = startPos - currentPos;
+                direction = rb.position - currentPos;
+                unnormolizedDirection = direction;
                 float distance = direction.magnitude;
                 currentMaxDragDistance = maxDragDistance;
 
@@ -210,14 +415,17 @@ public class ThrowHead : MonoBehaviour
                     direction = direction.normalized * currentMaxDragDistance;
                 }
 
-                rb.position = startPos - direction;
-                line.SetPosition(1, rb.position);
+                // 不改变蛇头的位置，而是改变线渲染的位置
+                line.SetPosition(1, startPos - direction);
                 isDragging = true;
             }
 
             if (Input.GetMouseButtonUp(0) && isDragging) //松开鼠标左键
             {
-                Vector2 force = (startPos - rb.position) * power;
+                SoundManager.Instance.PlaySFX(SoundManager.Instance.AudioClipList[2], 0.5f);
+
+                // 将力的方向反过来
+                Vector2 force = (-direction) * power;
 
                 //如果force没有到达最小值，那么设定为最小值
                 if (force.magnitude < 1f)
@@ -229,24 +437,34 @@ public class ThrowHead : MonoBehaviour
                 line.enabled = false;
                 releaseTime = Time.time;
 
-                /*
-                // 将蛇头的移动路径添加到队列中
-                path.Enqueue(rb.position);
-                */
                 isDragging = false;
                 isCanDrag = false;
+
+                //如果蛇身存在,那么获取第一个蛇身的位置
+                Vector3 firstbody = bodyList.Count > 0 ? bodyList[0].position : HeadPos; //如果蛇身存在，那么获取第一个蛇身的位置，如果不存在，那么获取蛇头的位置
+
+                EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.MoveInitial, new GameEventArgs(){Vector3Value = firstbody});
             }
         }
 
 
 
         // 检测“当头不再动”
-        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 0.1f && Time.time - releaseTime > 0.1f)
+        if (!(Input.GetMouseButton(0)) && rb.velocity.magnitude < 2f && Time.time - releaseTime > 1f)
         {
-            if (moveCoroutine == null)
+            // Debug.Log("头不再动");
+            tileHeadPos();
+            EventManager.Instance.TriggerGameEvent(EventManager.GameEvent.OnMove);
+                
+            if (isAIReady == true)
             {
-                moveCoroutine = StartCoroutine(MoveRepeatedly());
-            }
+                if (moveCoroutine == null)
+                {
+                    moveCoroutine = StartCoroutine(MoveRepeatedly());
+                }
+
+            }   
+
         }
         else
         {
@@ -264,6 +482,49 @@ public class ThrowHead : MonoBehaviour
                 OnMove();
                 yield return new WaitForSeconds(Timer); //等待Timer秒
             }
+        }
+    }
+
+    public void tileHeadPos()
+    {
+        // 计算蛇头的新位置
+        HeadPos = gameObject.transform.position;
+        
+        // 计算蛇头的新位置
+        Vector3 headPos = gameObject.transform.position;
+
+        // 将蛇头的新位置转换为最近的瓷砖中心
+        Vector3Int cellPos = grid.WorldToCell(headPos);
+        Vector3 cellCenterPos = grid.GetCellCenterWorld(cellPos);
+        // 
+        // 使用瓷砖中心作为蛇头的新位置
+        headPos = cellCenterPos;
+        gameObject.transform.position = headPos;
+        // 速度变成0
+        rb.velocity = Vector2.zero;
+    }
+
+    public void AIReady(EventManager.GameEvent gameEvent, GameEventArgs eventArgs)
+    {
+    
+        if (gameEvent == EventManager.GameEvent.AIReady)
+        {
+            Debug.Log("PathPassed - SpringHeadGet");
+            //拷贝eventArgs.Vector3QueueValue的值到path
+            path = new Queue<Vector3>(eventArgs.Vector3QueueValue);
+            
+            isPassPath = true;
+        }
+    
+    }
+    
+    public void GameOver(EventManager.GameEvent gameEvent, GameEventArgs eventArgs)
+    {
+        if (gameEvent == EventManager.GameEvent.GameOver)
+        {
+            Debug.Log("GameOver - SpringHeadGet");
+            //清空当前路径
+            isGameOver = true;
         }
     }
 }
